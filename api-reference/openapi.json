@@ -1,217 +1,1165 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
-    },
+    "title": "Stream Estate API",
+    "description": "# Getting started\n## Dates - Timezones\n\nAll date and time formats are in UTC. Always convert any DateTime instance to UTC.\n\n",
     "version": "1.0.0"
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
-    }
-  ],
-  "security": [
-    {
-      "bearerAuth": []
+      "url": "/",
+      "description": ""
     }
   ],
   "paths": {
-    "/plants": {
-      "get": {
-        "description": "Returns all plants from the system that the user has access to",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
+    "/listings": {
+      "post": {
+        "operationId": "api_listings_post",
+        "tags": [
+          "Listing"
         ],
         "responses": {
-          "200": {
-            "description": "Plant response",
+          "202": {
+            "description": "Listing resource created",
             "content": {
+              "application/ld+json": {
+                "schema": {}
+              },
               "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
-                  }
-                }
+                "schema": {}
               }
-            }
+            },
+            "links": {}
           },
           "400": {
-            "description": "Unexpected error",
+            "description": "Invalid input",
             "content": {
+              "application/ld+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error.jsonld"
+                }
+              },
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              },
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
                 }
               }
-            }
+            },
+            "links": {}
+          },
+          "422": {
+            "description": "An error occurred",
+            "content": {
+              "application/ld+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConstraintViolation.jsonld-jsonld"
+                }
+              },
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConstraintViolation-json"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConstraintViolation-json"
+                }
+              }
+            },
+            "links": {}
           }
-        }
-      },
-      "post": {
-        "description": "Creates a new plant in the store",
+        },
+        "summary": "Creates a Listing resource.",
+        "description": "Creates a Listing resource.",
+        "parameters": [],
         "requestBody": {
-          "description": "Plant to add to the store",
+          "description": "The new Listing resource",
           "content": {
+            "application/ld+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Listing.jsonld"
+              }
+            },
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "$ref": "#/components/schemas/Listing"
               }
             }
           },
           "required": true
         },
-        "responses": {
-          "200": {
-            "description": "plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Plant"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
+        "deprecated": false
       }
     },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
+    "api_auth": {
+      "post": {
+        "operationId": "login_check_post",
+        "tags": [
+          "Login Check"
         ],
         "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
+          "200": {
+            "description": "User token created",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "readOnly": true,
+                      "type": "string",
+                      "nullable": false
+                    }
+                  },
+                  "required": [
+                    "token"
+                  ]
                 }
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
-      "post": {
-        "description": "Information about a new plant added to the store",
-        "requestBody": {
-          "description": "Plant added to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
               }
             }
           }
         },
+        "summary": "Creates a user token.",
+        "description": "Creates a user token.",
+        "requestBody": {
+          "description": "The login data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "nullable": false
+                  },
+                  "password": {
+                    "type": "string",
+                    "nullable": false
+                  }
+                },
+                "required": [
+                  "email",
+                  "password"
+                ]
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "operationId": "api_users_get_collection",
+        "tags": [
+          "User"
+        ],
         "responses": {
           "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
+            "description": "User collection",
+            "content": {
+              "application/ld+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "member": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/User.jsonld"
+                      }
+                    },
+                    "totalItems": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "view": {
+                      "type": "object",
+                      "properties": {
+                        "@id": {
+                          "type": "string",
+                          "format": "iri-reference"
+                        },
+                        "@type": {
+                          "type": "string"
+                        },
+                        "first": {
+                          "type": "string",
+                          "format": "iri-reference"
+                        },
+                        "last": {
+                          "type": "string",
+                          "format": "iri-reference"
+                        },
+                        "previous": {
+                          "type": "string",
+                          "format": "iri-reference"
+                        },
+                        "next": {
+                          "type": "string",
+                          "format": "iri-reference"
+                        }
+                      },
+                      "example": {
+                        "@id": "string",
+                        "type": "string",
+                        "first": "string",
+                        "last": "string",
+                        "previous": "string",
+                        "next": "string"
+                      }
+                    },
+                    "search": {
+                      "type": "object",
+                      "properties": {
+                        "@type": {
+                          "type": "string"
+                        },
+                        "template": {
+                          "type": "string"
+                        },
+                        "variableRepresentation": {
+                          "type": "string"
+                        },
+                        "mapping": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "@type": {
+                                "type": "string"
+                              },
+                              "variable": {
+                                "type": "string"
+                              },
+                              "property": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "required": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "member"
+                  ]
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/ld+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error.jsonld"
+                }
+              },
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "links": {}
           }
-        }
+        },
+        "summary": "Retrieves the collection of User resources.",
+        "description": "Retrieves the collection of User resources.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "The collection page number",
+            "required": false,
+            "deprecated": false,
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "style": "form",
+            "explode": false,
+            "allowReserved": false
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "deprecated": false,
+            "allowEmptyValue": false,
+            "schema": {
+              "type": "string"
+            },
+            "style": "form",
+            "explode": false,
+            "allowReserved": false
+          },
+          {
+            "name": "email[]",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "deprecated": false,
+            "allowEmptyValue": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "style": "form",
+            "explode": true,
+            "allowReserved": false
+          }
+        ],
+        "deprecated": false
+      }
+    },
+    "/users/{uuid}": {
+      "get": {
+        "operationId": "api_users_uuid_get",
+        "tags": [
+          "User"
+        ],
+        "responses": {
+          "200": {
+            "description": "User resource",
+            "content": {
+              "application/ld+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User.jsonld"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/ld+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error.jsonld"
+                }
+              },
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "links": {}
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/ld+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error.jsonld"
+                }
+              },
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "links": {}
+          }
+        },
+        "summary": "Retrieves a User resource.",
+        "description": "Retrieves a User resource.",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "User identifier",
+            "required": true,
+            "deprecated": false,
+            "allowEmptyValue": false,
+            "schema": {
+              "type": "string"
+            },
+            "style": "simple",
+            "explode": false,
+            "allowReserved": false
+          }
+        ],
+        "deprecated": false
       }
     }
   },
   "components": {
     "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
+      "CityDTO": {
         "type": "object",
+        "description": "",
+        "deprecated": false,
         "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
+          "zipcodeUniq": {
+            "description": "Uniq city zipcode, such as zipcodeInsee in France. Best choice to qualify the city.",
+            "type": [
+              "string",
+              "null"
+            ]
           },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
+          "zipcode": {
+            "description": "City zipcode.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "description": "City name.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "regionName": {
+            "description": "Region name.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "country": {
+            "description": "Country name. Iso 3166-1 alpha-2 code is expected.",
+            "example": "FR",
+            "type": [
+              "string",
+              "null"
+            ]
           }
         }
       },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
+      "CityDTO.jsonld": {
+        "type": "object",
+        "description": "",
+        "deprecated": false,
+        "properties": {
+          "zipcodeUniq": {
+            "description": "Uniq city zipcode, such as zipcodeInsee in France. Best choice to qualify the city.",
+            "type": [
+              "string",
+              "null"
+            ]
           },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
+          "zipcode": {
+            "description": "City zipcode.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "description": "City name.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "regionName": {
+            "description": "Region name.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "country": {
+            "description": "Country name. Iso 3166-1 alpha-2 code is expected.",
+            "example": "FR",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "ConstraintViolation-json": {
+        "type": "object",
+        "description": "Unprocessable entity",
+        "deprecated": false,
+        "properties": {
+          "status": {
+            "default": 422,
+            "example": 422,
+            "type": "integer"
+          },
+          "violations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "propertyPath": {
+                  "type": "string",
+                  "description": "The property path of the violation"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "The message associated with the violation"
+                }
               }
             }
+          },
+          "detail": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "type": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "title": {
+            "readOnly": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "instance": {
+            "readOnly": true,
+            "type": [
+              "string",
+              "null"
+            ]
           }
-        ]
+        }
+      },
+      "ConstraintViolation.jsonld-jsonld": {
+        "type": "object",
+        "description": "Unprocessable entity",
+        "deprecated": false,
+        "properties": {
+          "@context": {
+            "readOnly": true,
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "@vocab": {
+                    "type": "string"
+                  },
+                  "hydra": {
+                    "type": "string",
+                    "enum": [
+                      "http://www.w3.org/ns/hydra/core#"
+                    ]
+                  }
+                },
+                "required": [
+                  "@vocab",
+                  "hydra"
+                ],
+                "additionalProperties": true
+              }
+            ]
+          },
+          "@id": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "@type": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "status": {
+            "default": 422,
+            "example": 422,
+            "type": "integer"
+          },
+          "violations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "propertyPath": {
+                  "type": "string",
+                  "description": "The property path of the violation"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "The message associated with the violation"
+                }
+              }
+            }
+          },
+          "detail": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "description": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "type": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "title": {
+            "readOnly": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "instance": {
+            "readOnly": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
       },
       "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
         "type": "object",
+        "description": "A representation of common errors.",
+        "deprecated": false,
         "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
+          "title": {
+            "readOnly": true,
+            "description": "A short, human-readable summary of the problem.",
+            "type": [
+              "string",
+              "null"
+            ]
           },
-          "message": {
+          "detail": {
+            "readOnly": true,
+            "description": "A human-readable explanation specific to this occurrence of the problem.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "number",
+            "example": 404,
+            "default": 400
+          },
+          "instance": {
+            "readOnly": true,
+            "description": "A URI reference that identifies the specific occurrence of the problem. It may or may not yield further information if dereferenced.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "readOnly": true,
+            "description": "A URI reference that identifies the problem type",
             "type": "string"
           }
         }
+      },
+      "Error.jsonld": {
+        "type": "object",
+        "description": "A representation of common errors.",
+        "deprecated": false,
+        "properties": {
+          "@context": {
+            "readOnly": true,
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "@vocab": {
+                    "type": "string"
+                  },
+                  "hydra": {
+                    "type": "string",
+                    "enum": [
+                      "http://www.w3.org/ns/hydra/core#"
+                    ]
+                  }
+                },
+                "required": [
+                  "@vocab",
+                  "hydra"
+                ],
+                "additionalProperties": true
+              }
+            ]
+          },
+          "@id": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "@type": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "title": {
+            "readOnly": true,
+            "description": "A short, human-readable summary of the problem.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "detail": {
+            "readOnly": true,
+            "description": "A human-readable explanation specific to this occurrence of the problem.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "number",
+            "example": 404,
+            "default": 400
+          },
+          "instance": {
+            "readOnly": true,
+            "description": "A URI reference that identifies the specific occurrence of the problem. It may or may not yield further information if dereferenced.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "readOnly": true,
+            "description": "A URI reference that identifies the problem type",
+            "type": "string"
+          },
+          "description": {
+            "readOnly": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "Listing": {
+        "type": "object",
+        "description": "",
+        "deprecated": false,
+        "required": [
+          "_task",
+          "listing"
+        ],
+        "properties": {
+          "_task": {
+            "description": "Crawl task metadata. Used to retrieve task in DB, sent parameters, related city...",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TaskDTO"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "listing": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ListingDTO"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "Listing.jsonld": {
+        "type": "object",
+        "description": "",
+        "deprecated": false,
+        "required": [
+          "_task",
+          "listing"
+        ],
+        "properties": {
+          "_task": {
+            "description": "Crawl task metadata. Used to retrieve task in DB, sent parameters, related city...",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TaskDTO.jsonld"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "listing": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ListingDTO.jsonld"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "ListingDTO": {
+        "type": "object",
+        "description": "",
+        "deprecated": false,
+        "required": [
+          "city",
+          "url",
+          "price"
+        ],
+        "properties": {
+          "city": {
+            "description": "Listing city location. City will be qualified by its attributes.",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CityDTO"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "url": {
+            "format": "uri",
+            "description": "Listing permalink.",
+            "externalDocs": {
+              "url": "https://schema.org/url"
+            },
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "price": {
+            "exclusiveMinimum": 0,
+            "description": "Listing price.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "surface": {
+            "exclusiveMinimum": 0,
+            "description": "Listing surface.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "floor": {
+            "description": "Floor number. Will be set to null if invalid.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "pictureUrls": {
+            "description": "Listing url pictures. Absolute URLs are expected.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ListingDTO.jsonld": {
+        "type": "object",
+        "description": "",
+        "deprecated": false,
+        "required": [
+          "city",
+          "url",
+          "price"
+        ],
+        "properties": {
+          "city": {
+            "description": "Listing city location. City will be qualified by its attributes.",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CityDTO.jsonld"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "url": {
+            "format": "uri",
+            "description": "Listing permalink.",
+            "externalDocs": {
+              "url": "https://schema.org/url"
+            },
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "price": {
+            "exclusiveMinimum": 0,
+            "description": "Listing price.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "surface": {
+            "exclusiveMinimum": 0,
+            "description": "Listing surface.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "floor": {
+            "description": "Floor number. Will be set to null if invalid.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "pictureUrls": {
+            "description": "Listing url pictures. Absolute URLs are expected.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "TaskDTO": {
+        "type": "object",
+        "description": "",
+        "deprecated": false,
+        "properties": {
+          "id": {
+            "description": "Crawl task ID.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "startedAt": {
+            "description": "Crawl start date.",
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "TaskDTO.jsonld": {
+        "type": "object",
+        "description": "",
+        "deprecated": false,
+        "properties": {
+          "id": {
+            "description": "Crawl task ID.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "startedAt": {
+            "description": "Crawl start date.",
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "description": "",
+        "deprecated": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "format": "email",
+            "externalDocs": {
+              "url": "https://schema.org/email"
+            },
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "password": {
+            "writeOnly": true,
+            "description": "If null, a strong password will be generated",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "enabled": {
+            "default": true,
+            "example": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "User.jsonld": {
+        "type": "object",
+        "description": "",
+        "deprecated": false,
+        "properties": {
+          "@context": {
+            "readOnly": true,
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "@vocab": {
+                    "type": "string"
+                  },
+                  "hydra": {
+                    "type": "string",
+                    "enum": [
+                      "http://www.w3.org/ns/hydra/core#"
+                    ]
+                  }
+                },
+                "required": [
+                  "@vocab",
+                  "hydra"
+                ],
+                "additionalProperties": true
+              }
+            ]
+          },
+          "@id": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "@type": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "format": "email",
+            "externalDocs": {
+              "url": "https://schema.org/email"
+            },
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "password": {
+            "writeOnly": true,
+            "description": "If null, a strong password will be generated",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "enabled": {
+            "default": true,
+            "example": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "email"
+        ]
       }
     },
+    "responses": {},
+    "parameters": {},
+    "examples": {},
+    "requestBodies": {},
+    "headers": {},
     "securitySchemes": {
-      "bearerAuth": {
+      "JWT": {
         "type": "http",
-        "scheme": "bearer"
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
       }
     }
-  }
+  },
+  "security": [],
+  "tags": []
 }
