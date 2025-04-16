@@ -43,7 +43,7 @@
               "api-reference/introduction"
             ],
             "openapi": {
-              "source": "openapi.json",
+              "source": "/openapi.json",
               "directory": "api-reference"
             }
           },
